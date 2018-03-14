@@ -1,22 +1,28 @@
 // ==UserScript==
-// @name         Minotaur to Google Calendar
+// @name         Minotaur to .ics
 // @namespace    https://github.com/nembot/minotaur
 // @version      0.1
-// @description  Permet d'exporter les dates de convocations en format Google Calendar
+// @description  Permet d'exporter les dates en format .ics
 // @author       Nembot
-// @include      https://minotaur.sso.gendarmerie.interieur.gouv.fr/*
-// @require      https://raw.githubusercontent.com/nwcell/ics.js/master/ics.deps.min.js
+// @match        https://minotaur.sso.gendarmerie.interieur.gouv.fr/reserviste/convocations/recap
+// @require      https://raw.githubusercontent.com/nembot/minotaur/master/ics.deps.min.js
 // ==/UserScript==
 
 (function() {
-    var tabTitle = document.getElementById('nbJours');
+    var nbJours = document.getElementById('nbJours');
     var button = document.createElement("button");
-    var dataFor;
     var cal = ics();
-    var dateStart, dateEnd;
-    button.innerHTML = "Generate";
-    tabTitle.appendChild(button);
+    var dataFor, subject, description, dateStart, dateEnd, location;
+
+    button.innerHTML = "Export to .ics";
+    nbJours.appendChild(button);
+
+    button.style.position = "absolute";
+    button.style.left = "37%";
+    button.style.padding = "10px";
     button.setAttribute("id","calendar");
+
+    nbJours.parentNode.insertBefore(button, nbJours);
 
     document.getElementById("calendar").addEventListener("click", function(){
         var tRow = document.getElementById('miniCal').getElementsByTagName("tr");
@@ -25,10 +31,12 @@
                 dataFor = tRow[i].dataset.for;
                 dateStart = dataFor.split("+")[1];
                 dateEnd = dataFor.split("+")[2];
-                cal.addEvent('Mission', '', 'Lonjumeau',  dateStart, dateEnd);
-                //date = tRow[i].children[2];
+                subject = tRow[i].cells[3].getElementsByTagName("span")[0].innerHTML;
+                description = tRow[i].cells[3].title;
+                location = tRow[i].cells[4].getElementsByTagName("span")[0].innerHTML;
+                cal.addEvent(subject, description, location,  dateStart, dateEnd);
             }
         }
-        cal.download('mission');
+        cal.download('missions');
     });
 })();
